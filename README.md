@@ -1,6 +1,6 @@
-# GeoDistance Calculator
+# GeoDistance Calculator 
 
-A Ruby on Rails application for calculating distances between Earth coordinates following the curvature of the Earth.
+A Ruby on Rails application written by Anthropic Claude for calculating distances between Earth coordinates following the curvature of the Earth.
 
 ## Features
 
@@ -15,16 +15,17 @@ A Ruby on Rails application for calculating distances between Earth coordinates 
 
 ```bash
 # Navigate to the project directory
-cd /Users/test/rails/claude
+git clone https://github.com/unixneo/geo_distance_rails.git
+cd /path/to/geo_distance_rails
 
 # Install dependencies
 bundle install
 
 # Setup database
-bin/rails db:prepare
+rails db:prepare
 
 # Start the server
-bin/rails server
+rails server
 ```
 
 ## Usage
