@@ -1,0 +1,255 @@
+<h1>🌍 GeoDistance Calculator</h1>
+<p class="subtitle">Calculate distances between Earth coordinates following the curvature of the Earth</p>
+
+<% if @result && @result[:success] == false %>
+  <div class="error">
+    <strong>Error:</strong>
+    <ul>
+      <% @result[:errors].each do |error| %>
+        <li><%= error %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<% if @result && @result[:success] %>
+  <div class="card result">
+    <div class="card-title">📍 Distance Result</div>
+    
+    <div class="result-hero">
+      <span class="result-value"><%= number_with_delimiter(number_with_precision(@result[:surface_distance_km], precision: 2)) %></span>
+      <span class="result-unit">kilometers</span>
+    </div>
+    
+    <div class="result-grid">
+      <div class="result-item">
+        <div class="result-item-label">Meters</div>
+        <div class="result-item-value"><%= number_with_delimiter(@result[:surface_distance].round) %></div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-item-label">Miles</div>
+        <div class="result-item-value"><%= number_with_delimiter(number_with_precision(@result[:surface_distance_miles], precision: 2)) %></div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-item-label">Nautical Miles</div>
+        <div class="result-item-value"><%= number_with_delimiter(number_with_precision(@result[:surface_distance_nautical_miles], precision: 2)) %></div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-item-label">Initial Bearing</div>
+        <div class="result-item-value"><%= number_with_precision(@result[:initial_bearing], precision: 1) %>°</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-item-label">Final Bearing</div>
+        <div class="result-item-value"><%= number_with_precision(@result[:final_bearing], precision: 1) %>°</div>
+      </div>
+      
+      <div class="result-item">
+        <div class="result-item-label">Altitude Diff</div>
+        <div class="result-item-value"><%= number_with_delimiter(number_with_precision(@result[:altitude_difference], precision: 1)) %> m</div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">🗺️ Route Map</div>
+    <div id="map"></div>
+  </div>
+<% end %>
+
+<%= form_with url: distance_calculate_path, method: :post, local: true, id: 'distance-form' do |f| %>
+  <div class="card" style="margin-bottom: 1rem;">
+    <div class="card-title">🧪 Quick Test Routes</div>
+    <div class="preset-buttons">
+      <button type="button" class="preset-btn" onclick="setPreset(40.7128, -74.0060, 51.5074, -0.1278)">NYC → London</button>
+      <button type="button" class="preset-btn" onclick="setPreset(36.1627, -86.7816, 13.7563, 100.5018)">Nashville → Bangkok</button>
+      <button type="button" class="preset-btn" onclick="setPreset(34.0522, -118.2437, -33.8688, 151.2093)">LA → Sydney</button>
+      <button type="button" class="preset-btn" onclick="setPreset(51.5074, -0.1278, 35.6762, 139.6503)">London → Tokyo</button>
+      <button type="button" class="preset-btn" onclick="setPreset(-23.5505, -46.6333, -33.9249, 18.4241)">São Paulo → Cape Town</button>
+      <button type="button" class="preset-btn" onclick="setPreset(64.1466, -21.9426, -33.9249, 18.4241)">Reykjavik → Cape Town</button>
+    </div>
+  </div>
+
+  <div class="points-grid">
+    <div class="card">
+      <div class="card-title">📍 Point 1 (Origin)</div>
+      
+      <div class="form-group">
+        <label for="point1_latitude">Latitude</label>
+        <input type="number" name="point1[latitude]" id="point1_latitude" step="any" 
+               placeholder="e.g., 40.7128" value="<%= @result&.dig(:point1, :latitude) %>" required>
+        <div class="hint">-90 to 90 (positive = North)</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="point1_longitude">Longitude</label>
+        <input type="number" name="point1[longitude]" id="point1_longitude" step="any" 
+               placeholder="e.g., -74.0060" value="<%= @result&.dig(:point1, :longitude) %>" required>
+        <div class="hint">-180 to 180 (positive = East)</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="point1_altitude">Altitude (optional)</label>
+        <input type="number" name="point1[altitude]" id="point1_altitude" step="any" 
+               placeholder="e.g., 0" value="<%= @result&.dig(:point1, :altitude) %>">
+        <div class="hint">Meters above mean sea level</div>
+      </div>
+    </div>
+    
+    <div class="card">
+      <div class="card-title">📍 Point 2 (Destination)</div>
+      
+      <div class="form-group">
+        <label for="point2_latitude">Latitude</label>
+        <input type="number" name="point2[latitude]" id="point2_latitude" step="any" 
+               placeholder="e.g., 51.5074" value="<%= @result&.dig(:point2, :latitude) %>" required>
+        <div class="hint">-90 to 90 (positive = North)</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="point2_longitude">Longitude</label>
+        <input type="number" name="point2[longitude]" id="point2_longitude" step="any" 
+               placeholder="e.g., -0.1278" value="<%= @result&.dig(:point2, :longitude) %>" required>
+        <div class="hint">-180 to 180 (positive = East)</div>
+      </div>
+      
+      <div class="form-group">
+        <label for="point2_altitude">Altitude (optional)</label>
+        <input type="number" name="point2[altitude]" id="point2_altitude" step="any" 
+               placeholder="e.g., 0" value="<%= @result&.dig(:point2, :altitude) %>">
+        <div class="hint">Meters above mean sea level</div>
+      </div>
+    </div>
+  </div>
+  
+  <button type="submit">Calculate Distance</button>
+<% end %>
+
+<script>
+  function setPreset(lat1, lon1, lat2, lon2) {
+    document.getElementById('point1_latitude').value = lat1;
+    document.getElementById('point1_longitude').value = lon1;
+    document.getElementById('point2_latitude').value = lat2;
+    document.getElementById('point2_longitude').value = lon2;
+    document.getElementById('point1_altitude').value = '';
+    document.getElementById('point2_altitude').value = '';
+    document.getElementById('distance-form').submit();
+  }
+</script>
+
+<div class="card" style="margin-top: 2rem;">
+  <div class="card-title">🔌 API Usage</div>
+  <p><strong>Endpoint:</strong> <code>POST /api/v1/distance</code></p>
+  <p style="margin-top: 0.5rem;"><strong>cURL Example:</strong></p>
+  <pre>curl -X POST http://localhost:3000/api/v1/distance \
+  -H "Content-Type: application/json" \
+  -d '{"point1":{"latitude":40.7128,"longitude":-74.0060},"point2":{"latitude":51.5074,"longitude":-0.1278}}'</pre>
+</div>
+
+<div class="card">
+  <div class="card-title">ℹ️ About</div>
+  <p>Uses the <strong>Vincenty formula</strong> on the WGS-84 ellipsoid for sub-millimeter accuracy.</p>
+</div>
+
+<% if @result && @result[:success] %>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const lat1 = <%= @result[:point1][:latitude] %>;
+    const lon1 = <%= @result[:point1][:longitude] %>;
+    const lat2 = <%= @result[:point2][:latitude] %>;
+    const lon2 = <%= @result[:point2][:longitude] %>;
+    
+    // Calculate intermediate points along a great circle
+    function intermediatePoint(lat1, lon1, lat2, lon2, fraction) {
+      const toRad = d => d * Math.PI / 180;
+      const toDeg = r => r * 180 / Math.PI;
+      
+      const φ1 = toRad(lat1), λ1 = toRad(lon1);
+      const φ2 = toRad(lat2), λ2 = toRad(lon2);
+      
+      const sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1);
+      const sinφ2 = Math.sin(φ2), cosφ2 = Math.cos(φ2);
+      
+      const Δφ = φ2 - φ1;
+      const Δλ = λ2 - λ1;
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) + cosφ1 * cosφ2 * Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const δ = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      
+      if (δ === 0) return [lat1, lon1];
+      
+      const A = Math.sin((1-fraction)*δ) / Math.sin(δ);
+      const B = Math.sin(fraction*δ) / Math.sin(δ);
+      
+      const x = A * cosφ1 * Math.cos(λ1) + B * cosφ2 * Math.cos(λ2);
+      const y = A * cosφ1 * Math.sin(λ1) + B * cosφ2 * Math.sin(λ2);
+      const z = A * sinφ1 + B * sinφ2;
+      
+      const φ3 = Math.atan2(z, Math.sqrt(x*x + y*y));
+      const λ3 = Math.atan2(y, x);
+      
+      return [toDeg(φ3), toDeg(λ3)];
+    }
+    
+    // Generate great circle points with continuous longitude
+    function generateGreatCirclePoints(lat1, lon1, lat2, lon2, numPoints) {
+      const points = [];
+      let prevLon = null;
+      let offset = 0;
+      
+      for (let i = 0; i <= numPoints; i++) {
+        const f = i / numPoints;
+        const [lat, lon] = intermediatePoint(lat1, lon1, lat2, lon2, f);
+        
+        // Keep longitude continuous (handle antimeridian crossing)
+        let adjustedLon = lon + offset;
+        if (prevLon !== null) {
+          const diff = lon - (prevLon - offset);
+          if (diff > 180) {
+            offset -= 360;
+            adjustedLon = lon + offset;
+          } else if (diff < -180) {
+            offset += 360;
+            adjustedLon = lon + offset;
+          }
+        }
+        prevLon = adjustedLon;
+        
+        points.push([lat, adjustedLon]);
+      }
+      return points;
+    }
+    
+    // Generate the arc points
+    const points = generateGreatCirclePoints(lat1, lon1, lat2, lon2, 100);
+    
+    // Create map
+    const map = L.map('map');
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Draw the arc as a single continuous line
+    const polyline = L.polyline(points, {
+      color: '#2563eb',
+      weight: 3,
+      opacity: 0.8
+    }).addTo(map);
+    
+    // Add markers at the path endpoints (which have adjusted coordinates)
+    const marker1 = L.marker([points[0][0], points[0][1]]).addTo(map)
+      .bindPopup('<strong>Origin</strong><br>Lat: ' + lat1.toFixed(4) + '<br>Lon: ' + lon1.toFixed(4));
+    
+    const marker2 = L.marker([points[points.length-1][0], points[points.length-1][1]]).addTo(map)
+      .bindPopup('<strong>Destination</strong><br>Lat: ' + lat2.toFixed(4) + '<br>Lon: ' + lon2.toFixed(4));
+    
+    // Fit bounds to the polyline
+    map.fitBounds(polyline.getBounds().pad(0.1));
+  });
+</script>
+<% end %>
