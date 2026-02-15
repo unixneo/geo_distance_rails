@@ -128,7 +128,7 @@ Due to the curvature of the Earth, these bearings differ for long distances.
 ## Running Tests (TBD)
 
 ```bash
-/rails test
+rails test
 ```
 
 ## Example Distances
