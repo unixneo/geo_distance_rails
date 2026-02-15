@@ -125,10 +125,10 @@ Key parameters (WGS-84):
 
 Due to the curvature of the Earth, these bearings differ for long distances.
 
-## Running Tests
+## Running Tests (TBD)
 
 ```bash
-bin/rails test
+/rails test
 ```
 
 ## Example Distances
