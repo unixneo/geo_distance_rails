@@ -137,7 +137,7 @@ bin/rails test
 |-------|---------------|
 | New York → London | ~5,570 |
 | Sydney → Tokyo | ~7,823 |
-| Los Angeles → Sydney | ~12,073 |
+| Los Angeles → Sydney | ~12,63 |
 | London → Cape Town | ~9,672 |
 
 ## Technical Notes
